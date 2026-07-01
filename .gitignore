@@ -1,0 +1,15 @@
+# PII et état
+pending_followups.json
+mapping.json
+*.log
+*_state.json
+
+# Credentials
+credentials.json
+tokens.json
+.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/

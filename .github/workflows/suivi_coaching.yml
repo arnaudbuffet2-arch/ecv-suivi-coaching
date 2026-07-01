@@ -1,0 +1,61 @@
+name: Suivi Coaching to Gmail
+
+on:
+  schedule:
+    - cron: "0 7 * * *"   # 9h Paris (UTC+2 été) — 8h en hiver
+    - cron: "0 16 * * *"  # 18h Paris (UTC+2 été) — 17h en hiver
+  workflow_dispatch:         # déclenchement manuel possible
+
+jobs:
+  coaching-followup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install \
+            google-api-python-client==2.131.0 \
+            google-auth==2.29.0 \
+            google-auth-oauthlib==1.2.0
+
+      - name: Restore Google credentials
+        run: |
+          mkdir -p ~/.ecv
+          echo "$GOOGLE_CREDENTIALS_JSON" > ~/.ecv/credentials.json
+          echo "$GOOGLE_TOKENS_ECV_JSON" > ~/.ecv/tokens.json
+        env:
+          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          GOOGLE_TOKENS_ECV_JSON: ${{ secrets.GOOGLE_TOKENS_ECV_JSON }}
+
+      - name: Restore coaching state
+        run: |
+          echo "$COACHING_STATE_GZ_B64" | base64 -d | gunzip > pending_followups.json
+        env:
+          COACHING_STATE_GZ_B64: ${{ secrets.COACHING_STATE_GZ_B64 }}
+
+      - name: Run coaching followup
+        run: python coaching_followup.py --all
+
+      - name: Save updated tokens
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          cat ~/.ecv/tokens.json | gh secret set GOOGLE_TOKENS_ECV_JSON --repo ${{ github.repository }}
+
+      - name: Save coaching state
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gzip -c pending_followups.json | base64 -w 0 | gh secret set COACHING_STATE_GZ_B64 --repo ${{ github.repository }}
