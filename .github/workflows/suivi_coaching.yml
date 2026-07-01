@@ -2,9 +2,9 @@ name: Suivi Coaching to Gmail
 
 on:
   schedule:
-    - cron: "0 7 * * *"   # 9h Paris (UTC+2 été) — 8h en hiver
-    - cron: "0 16 * * *"  # 18h Paris (UTC+2 été) — 17h en hiver
-  workflow_dispatch:         # déclenchement manuel possible
+    - cron: "0 7 * * *"   # 9h Paris (UTC+2 summer)
+    - cron: "0 16 * * *"  # 18h Paris (UTC+2 summer)
+  workflow_dispatch:
 
 jobs:
   coaching-followup:
