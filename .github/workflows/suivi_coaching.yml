@@ -1,10 +1,7 @@
 name: Suivi Coaching to Gmail
 
 on:
-  schedule:
-    - cron: "0 7 * * *"   # 9h Paris (UTC+2 summer)
-    - cron: "0 16 * * *"  # 18h Paris (UTC+2 summer)
-  workflow_dispatch:
+  workflow_dispatch:        # déclenché par cron-job.org via l'API GitHub
 
 jobs:
   coaching-followup:
@@ -31,8 +28,8 @@ jobs:
       - name: Restore Google credentials
         run: |
           mkdir -p ~/.ecv
-          echo "$GOOGLE_CREDENTIALS_JSON" > ~/.ecv/credentials.json
-          echo "$GOOGLE_TOKENS_ECV_JSON" > ~/.ecv/tokens.json
+          printf '%s' "$GOOGLE_CREDENTIALS_JSON" > ~/.ecv/credentials.json
+          printf '%s' "$GOOGLE_TOKENS_ECV_JSON" > ~/.ecv/tokens.json
         env:
           GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
           GOOGLE_TOKENS_ECV_JSON: ${{ secrets.GOOGLE_TOKENS_ECV_JSON }}
